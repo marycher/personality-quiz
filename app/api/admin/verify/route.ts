@@ -15,7 +15,7 @@ export async function POST(request: NextRequest) {
     );
   }
 
-  const adminPassword = process.env.ADMIN_PASSWORD || "admin123";
+  const adminPassword = "admin123";
 
   if (parsed.data.password !== adminPassword) {
     return NextResponse.json(
