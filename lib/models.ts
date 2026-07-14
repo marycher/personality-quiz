@@ -1,4 +1,3 @@
-import { v4 as uuidv4 } from "uuid";
 import { getDbClient, isDatabaseAvailable } from "./db";
 import { TableName } from "./schema";
 import { GetCommand, PutCommand, ScanCommand, UpdateCommand, DeleteCommand } from "@aws-sdk/lib-dynamodb";
