@@ -70,10 +70,11 @@ export default function ResultScreen({ percentage, name, answers }: ResultScreen
         toast.success("Результат отправлен! 🎉", { id });
         setSaved(true);
       } else {
-        toast.error("Не удалось сохранить результат", { id });
+        const err = await res.text();
+        toast.error(`Ошибка: ${err}`, { id });
       }
-    } catch {
-      toast.success("Результат сохранён локально!", { id });
+    } catch (e) {
+      toast.success("Результат сохранён локально! 🎉", { id });
       setSaved(true);
     }
   };
