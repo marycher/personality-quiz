@@ -3,7 +3,6 @@
 import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Checkbox } from "@/components/ui/checkbox";
 import { toast } from "sonner";
 import { Plus, Pencil, Trash2, Check, X } from "lucide-react";
 
@@ -164,13 +163,15 @@ export default function AdminQuestions() {
           <div className="space-y-2">
             {newOptions.map((option, index) => (
               <div key={index} className="flex items-center gap-2">
-                <Checkbox
+                <input
+                  type="checkbox"
                   checked={option.isCorrect}
-                  onCheckedChange={(checked) => {
+                  onChange={(e) => {
                     const updated = [...newOptions];
-                    updated[index] = { ...updated[index], isCorrect: checked === true };
+                    updated[index] = { ...updated[index], isCorrect: e.target.checked };
                     setNewOptions(updated);
                   }}
+                  className="w-4 h-4"
                 />
                 <Input
                   placeholder={`Вариант ${index + 1}`}
@@ -207,13 +208,15 @@ export default function AdminQuestions() {
               <div className="space-y-2">
                 {editOptions.map((option, index) => (
                   <div key={index} className="flex items-center gap-2">
-                    <Checkbox
+                    <input
+                      type="checkbox"
                       checked={option.isCorrect}
-                      onCheckedChange={(checked) => {
+                      onChange={(e) => {
                         const updated = [...editOptions];
-                        updated[index] = { ...updated[index], isCorrect: checked === true };
+                        updated[index] = { ...updated[index], isCorrect: e.target.checked };
                         setEditOptions(updated);
                       }}
+                      className="w-4 h-4"
                     />
                     <Input
                       value={option.text}
@@ -223,6 +226,7 @@ export default function AdminQuestions() {
                         setEditOptions(updated);
                       }}
                       className="flex-1"
+                      placeholder={`Вариант ${index + 1}`}
                     />
                   </div>
                 ))}
