@@ -183,6 +183,17 @@ export default function AdminQuestions() {
                   }}
                   className="flex-1"
                 />
+                {newOptions.length > 2 && (
+                  <button
+                    onClick={() => {
+                      const updated = newOptions.filter((_, i) => i !== index);
+                      setNewOptions(updated);
+                    }}
+                    className="text-red-500 hover:text-red-700 text-sm px-2"
+                  >
+                    ✕
+                  </button>
+                )}
               </div>
             ))}
           </div>
@@ -228,6 +239,17 @@ export default function AdminQuestions() {
                       className="flex-1"
                       placeholder={`Вариант ${index + 1}`}
                     />
+                    {editOptions.length > 2 && (
+                      <button
+                        onClick={() => {
+                          const updated = editOptions.filter((_, i) => i !== index);
+                          setEditOptions(updated);
+                        }}
+                        className="text-red-500 hover:text-red-700 text-sm px-2"
+                      >
+                        ✕
+                      </button>
+                    )}
                   </div>
                 ))}
               </div>
