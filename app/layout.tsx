@@ -1,25 +1,17 @@
-import type { Metadata } from "next";
-import "./globals.css";
-import { Toaster } from "@/components/ui/sonner";
+import { cookies } from "next/headers";
+import { redirect } from "next/navigation";
 
-const appName = "Я знаю Алину лучше всех";
-
-export const metadata: Metadata = {
-  title: appName,
-  description: "Насколько хорошо ты знаешь Алину?",
-};
-
-export default function RootLayout({
+export default async function AdminLayout({
   children,
-}: Readonly<{
+}: {
   children: React.ReactNode;
-}>) {
-  return (
-    <html lang="ru">
-      <body className="antialiased">
-        {children}
-        <Toaster />
-      </body>
-    </html>
-  );
+}) {
+  const cookieStore = cookies();
+  const token = cookieStore.get("admin_token")?.value;
+
+  if (!token) {
+    redirect("/admin/login");
+  }
+
+  return <>{children}</>;
 }

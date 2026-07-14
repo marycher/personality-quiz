@@ -24,6 +24,7 @@ export default function AdminLoginPage() {
     if (res.ok) {
       toast.success("Добро пожаловать!");
       router.push("/admin");
+      router.refresh();
     } else {
       toast.error("Неверный пароль");
     }
