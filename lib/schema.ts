@@ -1,4 +1,4 @@
-import { ScalarAttributeType } from "@aws-sdk/client-dynamodb";
+import { ScalarAttributeType, KeyType } from "@aws-sdk/client-dynamodb";
 
 export const TableName = {
   QUESTIONS: "questions",
@@ -8,13 +8,13 @@ export const TableName = {
 export const TABLE_SCHEMAS = [
   {
     TableName: TableName.QUESTIONS,
-    KeySchema: [{ AttributeName: "id", KeyType: "HASH" }],
+    KeySchema: [{ AttributeName: "id", KeyType: KeyType.HASH }],
     AttributeDefinitions: [{ AttributeName: "id", AttributeType: ScalarAttributeType.S }],
     BillingMode: "PAY_PER_REQUEST",
   },
   {
     TableName: TableName.QUIZ_RESULTS,
-    KeySchema: [{ AttributeName: "id", KeyType: "HASH" }],
+    KeySchema: [{ AttributeName: "id", KeyType: KeyType.HASH }],
     AttributeDefinitions: [{ AttributeName: "id", AttributeType: ScalarAttributeType.S }],
     BillingMode: "PAY_PER_REQUEST",
   },
