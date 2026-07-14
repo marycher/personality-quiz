@@ -1,64 +1,31 @@
-import { getDbClient, isDatabaseAvailable } from "./db";
-import { TableName } from "./schema";
-import { GetCommand, PutCommand, ScanCommand, UpdateCommand, DeleteCommand } from "@aws-sdk/lib-dynamodb";
 import { mockQuestions, mockQuizResults } from "./mock-data";
 
 // Questions
 export async function getQuestions() {
-  if (!isDatabaseAvailable()) {
-    return mockQuestions;
-  }
-
-  const client = getDbClient();
-  const command = new ScanCommand({ TableName: TableName.QUESTIONS });
-  const result = await client.send(command);
-
-  return (result.Items || []) as any[];
+  return mockQuestions;
 }
 
 export async function createQuestion(data: { text: string; options: { text: string; isCorrect: boolean }[] }) {
-  const client = getDbClient();
-  const id = crypto.randomUUID ? crypto.randomUUID() : Math.random().toString(36).substring(2, 15);
+  const id = Math.random().toString(36).substring(2, 15);
   const item = { id, ...data };
-
-  const command = new PutCommand({
-    TableName: TableName.QUESTIONS,
-    Item: item,
-  });
-
-  await client.send(command);
+  mockQuestions.push(item);
   return item;
 }
 
 export async function updateQuestion(id: string, data: { text: string; options: { text: string; isCorrect: boolean }[] }) {
-  const client = getDbClient();
-  const command = new UpdateCommand({
-    TableName: TableName.QUESTIONS,
-    Key: { id },
-    UpdateExpression: "SET #text = :text, #options = :options",
-    ExpressionAttributeNames: {
-      "#text": "text",
-      "#options": "options",
-    },
-    ExpressionAttributeValues: {
-      ":text": data.text,
-      ":options": data.options,
-    },
-    ReturnValues: "ALL_NEW",
-  });
-
-  const result = await client.send(command);
-  return result.Attributes;
+  const index = mockQuestions.findIndex((q) => q.id === id);
+  if (index !== -1) {
+    mockQuestions[index] = { ...mockQuestions[index], ...data };
+    return mockQuestions[index];
+  }
+  return null;
 }
 
 export async function deleteQuestion(id: string) {
-  const client = getDbClient();
-  const command = new DeleteCommand({
-    TableName: TableName.QUESTIONS,
-    Key: { id },
-  });
-
-  await client.send(command);
+  const index = mockQuestions.findIndex((q) => q.id === id);
+  if (index !== -1) {
+    mockQuestions.splice(index, 1);
+  }
 }
 
 // Quiz Results
@@ -69,15 +36,8 @@ export async function saveQuizResult(data: {
   story: string;
   answers: { questionId: string; selectedIndex: number; isCorrect: boolean }[];
 }) {
-  const client = getDbClient();
-  const id = crypto.randomUUID ? crypto.randomUUID() : Math.random().toString(36).substring(2, 15);
+  const id = Math.random().toString(36).substring(2, 15);
   const item = { id, ...data, createdAt: new Date().toISOString() };
-
-  const command = new PutCommand({
-    TableName: TableName.QUIZ_RESULTS,
-    Item: item,
-  });
-
-  await client.send(command);
+  mockQuizResults.push(item);
   return item;
 }
