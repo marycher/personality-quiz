@@ -10,24 +10,7 @@ export default function AdminResultsPage() {
     fetch("/api/check-results")
       .then(r => r.json())
       .then(d => {
-        const items = (d.items || []).map((item: any) => ({
-          id: item.id?.S || "",
-          name: item.name?.S || "Аноним",
-          percentage: Number(item.percentage?.N || 0),
-          wish: item.wish?.S || "",
-          story: item.story?.S || "",
-          createdAt: item.createdAt?.S || "",
-          answers: (item.answers?.L || []).map((a: any) => ({
-            questionId: a.M?.questionId?.S || "",
-            selectedIndex: Number(a.M?.selectedIndex?.N || 0),
-            isCorrect: a.M?.isCorrect?.BOOL || false,
-          })),
-        }));
-        
-        // Сортируем по дате (сначала новые)
-        items.sort((a: any, b: any) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
-        
-        setData(items);
+        setData(d.items || []);
       })
       .catch(e => console.error("Error:", e))
       .finally(() => setLoading(false));

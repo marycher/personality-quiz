@@ -80,6 +80,66 @@ export async function getQuestions() {
             { text: "Пониженное мнение об окружающих", isCorrect: true },
           ],
         },
+		{
+          id: "6",
+          text: "Какой болезнью страдает Алина?",
+          options: [
+            { text: "Топографический критинизм", isCorrect: true },
+            { text: "Словесное недержание", isCorrect: true },
+            { text: "Повышенное чувство ответственности", isCorrect: true },
+            { text: "Пониженное мнение об окружающих", isCorrect: true },
+          ],
+        },
+		{
+          id: "7",
+          text: "Какой болезнью страдает Алина?",
+          options: [
+            { text: "Топографический критинизм", isCorrect: true },
+            { text: "Словесное недержание", isCorrect: true },
+            { text: "Повышенное чувство ответственности", isCorrect: true },
+            { text: "Пониженное мнение об окружающих", isCorrect: true },
+          ],
+        },
+		{
+          id: "8",
+          text: "Какой болезнью страдает Алина?",
+          options: [
+            { text: "Топографический критинизм", isCorrect: true },
+            { text: "Словесное недержание", isCorrect: true },
+            { text: "Повышенное чувство ответственности", isCorrect: true },
+            { text: "Пониженное мнение об окружающих", isCorrect: true },
+          ],
+        },
+		{
+          id: "9",
+          text: "Какой болезнью страдает Алина?",
+          options: [
+            { text: "Топографический критинизм", isCorrect: true },
+            { text: "Словесное недержание", isCorrect: true },
+            { text: "Повышенное чувство ответственности", isCorrect: true },
+            { text: "Пониженное мнение об окружающих", isCorrect: true },
+          ],
+        },
+		{
+          id: "10",
+          text: "Какой болезнью страдает Алина?",
+          options: [
+            { text: "Топографический критинизм", isCorrect: true },
+            { text: "Словесное недержание", isCorrect: true },
+            { text: "Повышенное чувство ответственности", isCorrect: true },
+            { text: "Пониженное мнение об окружающих", isCorrect: true },
+          ],
+        },
+		{
+          id: "11",
+          text: "Какой болезнью страдает Алина?",
+          options: [
+            { text: "Топографический критинизм", isCorrect: true },
+            { text: "Словесное недержание", isCorrect: true },
+            { text: "Повышенное чувство ответственности", isCorrect: true },
+            { text: "Пониженное мнение об окружающих", isCorrect: true },
+          ],
+        },
       ];
     }
     

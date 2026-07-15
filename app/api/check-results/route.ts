@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
-import { DynamoDBClient, ScanCommand } from "@aws-sdk/client-dynamodb";
+import { DynamoDBClient } from "@aws-sdk/client-dynamodb";
+import { DynamoDBDocumentClient, ScanCommand } from "@aws-sdk/lib-dynamodb";
 
 export async function GET() {
   try {
@@ -17,13 +18,15 @@ export async function GET() {
           : undefined,
     });
 
+    const docClient = DynamoDBDocumentClient.from(client);
     const command = new ScanCommand({ TableName: "quiz_results" });
-    const result = await client.send(command);
+    const result = await docClient.send(command);
 
-    return NextResponse.json({
-      count: result.Items?.length || 0,
-      items: result.Items,
-    });
+    const items = (result.Items || []).sort((a: any, b: any) => 
+      new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
+    );
+
+    return NextResponse.json({ count: items.length, items });
   } catch (error: any) {
     return NextResponse.json({ error: error.message }, { status: 500 });
   }
