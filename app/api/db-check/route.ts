@@ -1,8 +1,10 @@
-import { NextResponse } from "next/server";
-import { DynamoDBClient, ScanCommand } from "@aws-sdk/client-dynamodb";
+import { NextRequest, NextResponse } from "next/server";
+import { DynamoDBClient, PutItemCommand } from "@aws-sdk/client-dynamodb";
 
-export async function GET() {
+export async function POST(request: NextRequest) {
   try {
+    const body = await request.json();
+
     const endpoint = process.env.DOCUMENT_API_ENDPOINT;
     const region = process.env.DOCUMENT_API_REGION || "ru-central1";
     const accessKeyId = process.env.AWS_ACCESS_KEY_ID;
@@ -17,45 +19,37 @@ export async function GET() {
           : undefined,
     });
 
-    const command = new ScanCommand({ TableName: "quiz_results" });
-    const result = await client.send(command);
+    const id = Math.random().toString(36).substring(2, 15);
+    
+    const item = {
+      id: { S: id },
+      name: { S: body.name || "Аноним" },
+      percentage: { N: String(body.percentage || 0) },
+      wish: { S: body.wish || "" },
+      story: { S: body.story || "" },
+      createdAt: { S: new Date().toISOString() },
+    };
 
-    // Пробуем распарсить как сырой формат
-    const rawItems = result.Items || [];
-    const items = rawItems.map((item: any) => {
-      // Если это сырой формат DynamoDB (с S, N, L)
-      if (item.id?.S) {
-        return {
-          id: item.id.S,
-          name: item.name?.S || "Аноним",
-          percentage: Number(item.percentage?.N || 0),
-          wish: item.wish?.S || "",
-          story: item.story?.S || "",
-          createdAt: item.createdAt?.S || "",
-          answers: (item.answers?.L || []).map((a: any) => ({
-            questionId: a.M?.questionId?.S || "",
-            selectedIndex: Number(a.M?.selectedIndex?.N || 0),
-            isCorrect: a.M?.isCorrect?.BOOL || false,
-          })),
-        };
-      }
-      // Если это уже готовый формат
-      return {
-        id: item.id || "",
-        name: item.name || "Аноним",
-        percentage: item.percentage || 0,
-        wish: item.wish || "",
-        story: item.story || "",
-        createdAt: item.createdAt || "",
-        answers: item.answers || [],
+    if (body.answers && body.answers.length > 0) {
+      item.answers = {
+        L: body.answers.map((a: any) => ({
+          M: {
+            questionId: { S: String(a.questionId || "") },
+            selectedIndex: { N: String(a.selectedIndex || 0) },
+            isCorrect: { BOOL: a.isCorrect || false },
+          },
+        })),
       };
-    });
+    } else {
+      item.answers = { L: [] };
+    }
 
-    items.sort((a: any, b: any) => 
-      new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
-    );
+    await client.send(new PutItemCommand({
+      TableName: "quiz_results",
+      Item: item,
+    }));
 
-    return NextResponse.json({ count: items.length, items });
+    return NextResponse.json({ success: true, id }, { status: 201 });
   } catch (error: any) {
     return NextResponse.json({ error: error.message }, { status: 500 });
   }
