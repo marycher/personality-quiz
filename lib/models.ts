@@ -25,11 +25,70 @@ export async function getQuestions() {
     const docClient = getClient();
     const command = new ScanCommand({ TableName: "questions" });
     const result = await docClient.send(command);
-    return (result.Items || []) as any[];
+    const items = result.Items || [];
+    
+    if (items.length === 0) {
+      // Default questions if DB is empty
+      return [
+        {
+          id: "1",
+          text: "На что похож смех Алины?",
+          options: [
+            { text: "Свист чайника", isCorrect: false },
+            { text: "Скрип двери", isCorrect: false },
+            { text: "Крик чайки", isCorrect: true },
+            { text: "Звуки гиены", isCorrect: false },
+          ],
+        },
+        {
+          id: "2",
+          text: "В какой цвет Алина красила волосы?",
+          options: [
+            { text: "Рыжий", isCorrect: true },
+            { text: "Красный", isCorrect: false },
+            { text: "Синий", isCorrect: false },
+            { text: "Фиолетовый", isCorrect: false },
+          ],
+        },
+        {
+          id: "3",
+          text: "Кто из знаменитостей кормил Алину медом?",
+          options: [
+            { text: "Билан", isCorrect: false },
+            { text: "Арбенина", isCorrect: true },
+            { text: "Лолита", isCorrect: false },
+            { text: "Розенбаум", isCorrect: false },
+          ],
+        },
+        {
+          id: "4",
+          text: "Что из этого не умеет Алина?",
+          options: [
+            { text: "Играть в теннис", isCorrect: false },
+            { text: "Быстро бегать", isCorrect: false },
+            { text: "Кататься на велосипеде", isCorrect: true },
+            { text: "Прыгать на скакалке", isCorrect: false },
+          ],
+        },
+        {
+          id: "5",
+          text: "Какой болезнью страдает Алина?",
+          options: [
+            { text: "Топографический критинизм", isCorrect: true },
+            { text: "Словесное недержание", isCorrect: true },
+            { text: "Повышенное чувство ответственности", isCorrect: true },
+            { text: "Пониженное мнение об окружающих", isCorrect: true },
+          ],
+        },
+      ];
+    }
+    
+    return items as any[];
   } catch {
     return [];
   }
 }
+
 
 export async function createQuestion(data: { text: string; options: { text: string; isCorrect: boolean }[] }) {
   const docClient = getClient();
