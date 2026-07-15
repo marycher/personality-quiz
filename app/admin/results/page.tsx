@@ -1,28 +1,45 @@
-export const dynamic = 'force-dynamic';
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
+import { Button } from "@/components/ui/button";
+import { RefreshCw } from "lucide-react";
+
+export const dynamic = 'force-dynamic';
 
 export default function AdminResultsPage() {
   const [data, setData] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
 
-  useEffect(() => {
-    fetch("/api/check-results")
-      .then(r => r.json())
-      .then(d => {
-        setData(d.items || []);
-      })
-      .catch(e => console.error("Error:", e))
-      .finally(() => setLoading(false));
+  const fetchResults = useCallback(async () => {
+    setLoading(true);
+    try {
+      const res = await fetch("/api/check-results");
+      const d = await res.json();
+      setData(d.items || []);
+    } catch (e) {
+      console.error("Error:", e);
+    } finally {
+      setLoading(false);
+    }
   }, []);
 
-  if (loading) return <div className="p-8 text-center text-gray-500">Загрузка...</div>;
+  useEffect(() => {
+    fetchResults();
+  }, [fetchResults]);
 
   return (
     <div className="p-8 max-w-4xl mx-auto">
-      <h1 className="text-3xl font-bold mb-8">Результаты (всего: {data.length})</h1>
-      {data.length === 0 ? (
+      <div className="flex items-center justify-between mb-8">
+        <h1 className="text-3xl font-bold">Результаты (всего: {data.length})</h1>
+        <Button onClick={fetchResults} disabled={loading} variant="outline">
+          <RefreshCw className={`w-4 h-4 mr-2 ${loading ? "animate-spin" : ""}`} />
+          Обновить
+        </Button>
+      </div>
+
+      {loading && data.length === 0 ? (
+        <p className="text-gray-500 text-center py-12">Загрузка...</p>
+      ) : data.length === 0 ? (
         <p className="text-gray-500 text-center py-12">Пока нет результатов</p>
       ) : (
         <div className="space-y-4">
