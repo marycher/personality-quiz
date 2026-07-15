@@ -13,7 +13,7 @@ export default function AdminResultsPage() {
   const fetchResults = useCallback(async () => {
     setLoading(true);
     try {
-      const res = await fetch("/api/check-results");
+      const res = await fetch("/api/results-data");
       const d = await res.json();
       setData(d.items || []);
     } catch (e) {
