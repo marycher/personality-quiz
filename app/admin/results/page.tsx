@@ -55,8 +55,7 @@ export default function AdminResultsPage() {
     return q ? q.text : "Вопрос не найден";
   };
 
-
-  const getOptionText = (questionId: string, optionIndex: number) => {
+const getOptionText = (questionId: string, optionIndex: number) => {
     const index = parseInt(questionId);
     const q = questions[index];
     if (q && q.options[optionIndex]) {
@@ -64,6 +63,7 @@ export default function AdminResultsPage() {
     }
     return "Вариант не найден";
   };
+
 
 
   if (loading) {
