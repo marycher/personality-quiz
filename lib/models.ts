@@ -1,5 +1,6 @@
-import { DynamoDBClient, PutCommand, ScanCommand } from "@aws-sdk/client-dynamodb";
-import { DynamoDBDocumentClient } from "@aws-sdk/lib-dynamodb";
+import { DynamoDBClient } from "@aws-sdk/client-dynamodb";
+import { DynamoDBDocumentClient, PutCommand, ScanCommand, DeleteCommand } from "@aws-sdk/lib-dynamodb";
+
 
 function getClient() {
   const endpoint = process.env.DOCUMENT_API_ENDPOINT;
@@ -52,7 +53,6 @@ export async function updateQuestion(id: string, data: { text: string; options: 
 
 export async function deleteQuestion(id: string) {
   const docClient = getClient();
-  const { DeleteCommand } = await import("@aws-sdk/lib-dynamodb");
   await docClient.send(new DeleteCommand({
     TableName: "questions",
     Key: { id },
