@@ -31,7 +31,7 @@ export default function AdminResultsPage() {
 
   const fetchResults = async () => {
     try {
-      const res = await fetch("/api/admin/results");
+      const res = await fetch("/api/admin/results-data");
       if (res.ok) {
         const data = await res.json();
         setResults(data);
