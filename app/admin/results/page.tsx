@@ -49,7 +49,7 @@ export default function AdminResultsPage() {
     return "text-purple-600";
   };
 
-  const getQuestionText = (questionId: string) => {
+ const getQuestionText = (questionId: string) => {
     const index = parseInt(questionId);
     const q = questions[index];
     return q ? q.text : "Вопрос не найден";
@@ -63,6 +63,7 @@ const getOptionText = (questionId: string, optionIndex: number) => {
     }
     return "Вариант не найден";
   };
+
 
 
 
