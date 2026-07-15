@@ -7,11 +7,26 @@ export default function AdminResultsPage() {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    fetch("/api/admin/results-data")
+    fetch("/api/check-results")
       .then(r => r.json())
       .then(d => {
-        console.log("Results data:", d);
-        setData(d);
+        console.log("Raw data:", d);
+        // Преобразуем сырые данные DynamoDB в читаемый формат
+        const items = (d.items || []).map((item: any) => ({
+  id: item.id?.S || "",
+  name: item.name?.S || "Аноним",
+  percentage: Number(item.percentage?.N || 0),
+  wish: item.wish?.S || "",
+  story: item.story?.S || "",
+  createdAt: item.createdAt?.S || "",
+  answers: (item.answers?.L || []).map((a: any) => ({
+    questionId: a.M?.questionId?.S || "",
+    selectedIndex: Number(a.M?.selectedIndex?.N || 0),
+    isCorrect: a.M?.isCorrect?.BOOL || false,
+  })),
+}));
+
+        setData(items);
       })
       .catch(e => console.error("Error:", e))
       .finally(() => setLoading(false));
@@ -29,7 +44,7 @@ export default function AdminResultsPage() {
           {data.map((r: any, i: number) => (
             <div key={r.id || i} className="bg-white rounded-xl border p-4">
               <div className="flex items-center gap-3 mb-2">
-                <h3 className="font-semibold text-lg">{r.name || "Аноним"}</h3>
+                <h3 className="font-semibold text-lg">{r.name}</h3>
                 <span className="text-2xl font-bold text-purple-600">{r.percentage}%</span>
               </div>
               {r.wish && <p className="text-sm text-gray-600">💝 {r.wish}</p>}
