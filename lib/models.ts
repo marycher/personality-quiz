@@ -1,80 +1,54 @@
-let resultsStore: any[] = [];
-let questionsStore: any[] = [
-  {
-    id: "1",
-    text: "Какое любимое время года у Алины?",
-    options: [
-      { text: "Весна", isCorrect: false },
-      { text: "Лето", isCorrect: true },
-      { text: "Осень", isCorrect: false },
-      { text: "Зима", isCorrect: false },
-    ],
-  },
-  {
-    id: "2",
-    text: "Какое любимое блюдо у Алины?",
-    options: [
-      { text: "Паста", isCorrect: true },
-      { text: "Суши", isCorrect: false },
-      { text: "Пицца", isCorrect: false },
-      { text: "Салат", isCorrect: false },
-    ],
-  },
-  {
-    id: "3",
-    text: "Какое хобби у Алины?",
-    options: [
-      { text: "Рисование", isCorrect: false },
-      { text: "Фотография", isCorrect: true },
-      { text: "Танцы", isCorrect: false },
-      { text: "Пение", isCorrect: false },
-    ],
-  },
-  {
-    id: "4",
-    text: "Какой цвет любит Алина?",
-    options: [
-      { text: "Красный", isCorrect: false },
-      { text: "Синий", isCorrect: false },
-      { text: "Фиолетовый", isCorrect: true },
-      { text: "Зелёный", isCorrect: false },
-    ],
-  },
-  {
-    id: "5",
-    text: "Какое любимое животное у Алины?",
-    options: [
-      { text: "Собака", isCorrect: true },
-      { text: "Кошка", isCorrect: false },
-      { text: "Попугай", isCorrect: false },
-      { text: "Хомяк", isCorrect: false },
-    ],
-  },
-];
+import { DynamoDBClient } from "@aws-sdk/client-dynamodb";
+import { DynamoDBDocumentClient, PutCommand, ScanCommand, DeleteCommand } from "@aws-sdk/lib-dynamodb";
+
+function getClient() {
+  const endpoint = process.env.DOCUMENT_API_ENDPOINT;
+  const region = process.env.DOCUMENT_API_REGION || "ru-central1";
+  const accessKeyId = process.env.AWS_ACCESS_KEY_ID;
+  const secretAccessKey = process.env.AWS_SECRET_ACCESS_KEY;
+
+  const client = new DynamoDBClient({
+    region,
+    endpoint: endpoint || undefined,
+    credentials:
+      accessKeyId && secretAccessKey
+        ? { accessKeyId, secretAccessKey }
+        : undefined,
+  });
+
+  return DynamoDBDocumentClient.from(client);
+}
 
 // Questions
 export async function getQuestions() {
-  return questionsStore;
+  try {
+    const docClient = getClient();
+    const command = new ScanCommand({ TableName: "questions" });
+    const result = await docClient.send(command);
+    return (result.Items || []) as any[];
+  } catch {
+    return [];
+  }
 }
 
 export async function createQuestion(data: { text: string; options: { text: string; isCorrect: boolean }[] }) {
+  const docClient = getClient();
   const id = Math.random().toString(36).substring(2, 15);
   const item = { id, ...data };
-  questionsStore.push(item);
+  await docClient.send(new PutCommand({ TableName: "questions", Item: item }));
   return item;
 }
 
 export async function updateQuestion(id: string, data: { text: string; options: { text: string; isCorrect: boolean }[] }) {
-  const index = questionsStore.findIndex((q) => q.id === id);
-  if (index !== -1) {
-    questionsStore[index] = { ...questionsStore[index], ...data };
-    return questionsStore[index];
-  }
-  return null;
+  const docClient = getClient();
+  const item = { id, ...data };
+  await docClient.send(new PutCommand({ TableName: "questions", Item: item }));
+  return item;
 }
 
 export async function deleteQuestion(id: string) {
-  questionsStore = questionsStore.filter((q) => q.id !== id);
+  const docClient = getClient();
+  await docClient.send(new DeleteCommand({ TableName: "questions", Key: { id } }));
 }
 
 // Quiz Results
@@ -85,12 +59,27 @@ export async function saveQuizResult(data: {
   story: string;
   answers: { questionId: string; selectedIndex: number; isCorrect: boolean }[];
 }) {
+  const docClient = getClient();
   const id = Math.random().toString(36).substring(2, 15);
   const item = { id, ...data, createdAt: new Date().toISOString() };
-  resultsStore.push(item);
+  
+  console.log("Saving to DB:", JSON.stringify(item));
+  
+  await docClient.send(new PutCommand({ TableName: "quiz_results", Item: item }));
   return item;
 }
 
 export async function getQuizResults() {
-  return resultsStore.sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
+  try {
+    const docClient = getClient();
+    const command = new ScanCommand({ TableName: "quiz_results" });
+    const result = await docClient.send(command);
+    const items = (result.Items || []).sort((a: any, b: any) => 
+      new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
+    );
+    return items;
+  } catch (error) {
+    console.error("Error fetching results:", error);
+    return [];
+  }
 }
