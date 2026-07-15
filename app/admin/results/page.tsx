@@ -50,17 +50,21 @@ export default function AdminResultsPage() {
   };
 
   const getQuestionText = (questionId: string) => {
-    const q = questions.find(q => q.id === questionId);
+    const index = parseInt(questionId);
+    const q = questions[index];
     return q ? q.text : "Вопрос не найден";
   };
 
+
   const getOptionText = (questionId: string, optionIndex: number) => {
-    const q = questions.find(q => q.id === questionId);
+    const index = parseInt(questionId);
+    const q = questions[index];
     if (q && q.options[optionIndex]) {
       return q.options[optionIndex].text;
     }
     return "Вариант не найден";
   };
+
 
   if (loading) {
     return (

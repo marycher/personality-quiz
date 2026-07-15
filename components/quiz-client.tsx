@@ -26,15 +26,16 @@ export default function QuizClient({ questions, name }: QuizClientProps) {
   const isLast = currentIndex === questions.length - 1;
   const progress = ((currentIndex + 1) / questions.length) * 100;
 
-  const handleAnswer = useCallback(() => {
+const handleAnswer = useCallback(() => {
     if (selectedId === null) return;
     const isCorrect = currentQuestion.options[selectedId].isCorrect;
     setIsAnswered(true);
     setAnswers((prev) => [
       ...prev,
-      { questionId: currentQuestion.id, selectedIndex: selectedId, isCorrect },
+      { questionId: String(currentIndex), selectedIndex: selectedId, isCorrect },
     ]);
-  }, [selectedId, currentQuestion]);
+  }, [selectedId, currentQuestion, currentIndex]);
+
 
   const handleNext = useCallback(() => {
     if (isLast) {
