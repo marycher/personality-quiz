@@ -49,13 +49,13 @@ export default function AdminResultsPage() {
     return "text-purple-600";
   };
 
- const getQuestionText = (questionId: string) => {
+  const getQuestionText = (questionId: string) => {
     const index = parseInt(questionId);
     const q = questions[index];
     return q ? q.text : "Вопрос не найден";
   };
 
-const getOptionText = (questionId: string, optionIndex: number) => {
+  const getOptionText = (questionId: string, optionIndex: number) => {
     const index = parseInt(questionId);
     const q = questions[index];
     if (q && q.options[optionIndex]) {
@@ -63,9 +63,6 @@ const getOptionText = (questionId: string, optionIndex: number) => {
     }
     return "Вариант не найден";
   };
-
-
-
 
   if (loading) {
     return (
@@ -122,18 +119,22 @@ const getOptionText = (questionId: string, optionIndex: number) => {
                 {expandedId === result.id && (
                   <div className="mt-4 pt-4 border-t space-y-3">
                     <h4 className="font-medium text-sm text-gray-700 mb-2">Ответы на вопросы:</h4>
-                    {result.answers.map((answer, idx) => {
-                      const questionText = getQuestionText(answer.questionId);
-                      const selectedText = getOptionText(answer.questionId, answer.selectedIndex);
-                      return (
-                        <div key={idx} className={`p-3 rounded-lg text-sm ${answer.isCorrect ? "bg-green-50 border border-green-200" : "bg-red-50 border border-red-200"}`}>
-                          <p className="font-medium mb-1">{idx + 1}. {questionText}</p>
-                          <p className={answer.isCorrect ? "text-green-700" : "text-red-700"}>
-                            {answer.isCorrect ? "✓" : "✗"} Ответ: {selectedText}
-                          </p>
-                        </div>
-                      );
-                    })}
+                    {result.answers && result.answers.length > 0 ? (
+                      result.answers.map((answer, idx) => {
+                        const questionText = getQuestionText(answer.questionId);
+                        const selectedText = getOptionText(answer.questionId, answer.selectedIndex);
+                        return (
+                          <div key={idx} className={`p-3 rounded-lg text-sm ${answer.isCorrect ? "bg-green-50 border border-green-200" : "bg-red-50 border border-red-200"}`}>
+                            <p className="font-medium mb-1">{idx + 1}. {questionText}</p>
+                            <p className={answer.isCorrect ? "text-green-700" : "text-red-700"}>
+                              {answer.isCorrect ? "✓" : "✗"} Ответ: {selectedText}
+                            </p>
+                          </div>
+                        );
+                      })
+                    ) : (
+                      <p className="text-sm text-gray-500">Нет данных об ответах</p>
+                    )}
                   </div>
                 )}
               </div>
