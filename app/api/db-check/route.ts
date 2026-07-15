@@ -20,10 +20,42 @@ export async function GET() {
     const command = new ScanCommand({ TableName: "quiz_results" });
     const result = await client.send(command);
 
-    return NextResponse.json({
-      count: result.Items?.length || 0,
-      lastEvaluatedKey: result.LastEvaluatedKey ? "есть" : "нет",
+    // Пробуем распарсить как сырой формат
+    const rawItems = result.Items || [];
+    const items = rawItems.map((item: any) => {
+      // Если это сырой формат DynamoDB (с S, N, L)
+      if (item.id?.S) {
+        return {
+          id: item.id.S,
+          name: item.name?.S || "Аноним",
+          percentage: Number(item.percentage?.N || 0),
+          wish: item.wish?.S || "",
+          story: item.story?.S || "",
+          createdAt: item.createdAt?.S || "",
+          answers: (item.answers?.L || []).map((a: any) => ({
+            questionId: a.M?.questionId?.S || "",
+            selectedIndex: Number(a.M?.selectedIndex?.N || 0),
+            isCorrect: a.M?.isCorrect?.BOOL || false,
+          })),
+        };
+      }
+      // Если это уже готовый формат
+      return {
+        id: item.id || "",
+        name: item.name || "Аноним",
+        percentage: item.percentage || 0,
+        wish: item.wish || "",
+        story: item.story || "",
+        createdAt: item.createdAt || "",
+        answers: item.answers || [],
+      };
     });
+
+    items.sort((a: any, b: any) => 
+      new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
+    );
+
+    return NextResponse.json({ count: items.length, items });
   } catch (error: any) {
     return NextResponse.json({ error: error.message }, { status: 500 });
   }
