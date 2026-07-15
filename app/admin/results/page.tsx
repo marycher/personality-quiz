@@ -10,22 +10,23 @@ export default function AdminResultsPage() {
     fetch("/api/check-results")
       .then(r => r.json())
       .then(d => {
-        console.log("Raw data:", d);
-        // Преобразуем сырые данные DynamoDB в читаемый формат
         const items = (d.items || []).map((item: any) => ({
-  id: item.id?.S || "",
-  name: item.name?.S || "Аноним",
-  percentage: Number(item.percentage?.N || 0),
-  wish: item.wish?.S || "",
-  story: item.story?.S || "",
-  createdAt: item.createdAt?.S || "",
-  answers: (item.answers?.L || []).map((a: any) => ({
-    questionId: a.M?.questionId?.S || "",
-    selectedIndex: Number(a.M?.selectedIndex?.N || 0),
-    isCorrect: a.M?.isCorrect?.BOOL || false,
-  })),
-}));
-
+          id: item.id?.S || "",
+          name: item.name?.S || "Аноним",
+          percentage: Number(item.percentage?.N || 0),
+          wish: item.wish?.S || "",
+          story: item.story?.S || "",
+          createdAt: item.createdAt?.S || "",
+          answers: (item.answers?.L || []).map((a: any) => ({
+            questionId: a.M?.questionId?.S || "",
+            selectedIndex: Number(a.M?.selectedIndex?.N || 0),
+            isCorrect: a.M?.isCorrect?.BOOL || false,
+          })),
+        }));
+        
+        // Сортируем по дате (сначала новые)
+        items.sort((a: any, b: any) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
+        
         setData(items);
       })
       .catch(e => console.error("Error:", e))
@@ -47,8 +48,8 @@ export default function AdminResultsPage() {
                 <h3 className="font-semibold text-lg">{r.name}</h3>
                 <span className="text-2xl font-bold text-purple-600">{r.percentage}%</span>
               </div>
-              {r.wish && <p className="text-sm text-gray-600">💝 {r.wish}</p>}
-              {r.story && <p className="text-sm text-gray-600">📖 {r.story}</p>}
+              {r.wish ? <p className="text-sm text-gray-600">💝 {r.wish}</p> : null}
+              {r.story ? <p className="text-sm text-gray-600">📖 {r.story}</p> : null}
               <p className="text-sm text-gray-400 mt-1">
                 📅 {new Date(r.createdAt).toLocaleDateString("ru-RU")}
               </p>
