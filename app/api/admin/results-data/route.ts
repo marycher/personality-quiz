@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
-import { DynamoDBClient, ScanCommand } from "@aws-sdk/client-dynamodb";
+import { DynamoDBClient } from "@aws-sdk/client-dynamodb";
+import { DynamoDBDocumentClient, ScanCommand } from "@aws-sdk/lib-dynamodb";
 
 export async function GET() {
   try {
@@ -17,24 +18,13 @@ export async function GET() {
           : undefined,
     });
 
+    const docClient = DynamoDBDocumentClient.from(client);
     const command = new ScanCommand({ TableName: "quiz_results" });
-    const result = await client.send(command);
+    const result = await docClient.send(command);
 
-    const items = (result.Items || []).map((item: any) => ({
-      id: item.id?.S || "",
-      name: item.name?.S || "Аноним",
-      percentage: Number(item.percentage?.N || 0),
-      wish: item.wish?.S || "",
-      story: item.story?.S || "",
-      createdAt: item.createdAt?.S || "",
-      answers: (item.answers?.L || []).map((a: any) => ({
-        questionId: a.M?.questionId?.S || "",
-        selectedIndex: Number(a.M?.selectedIndex?.N || 0),
-        isCorrect: a.M?.isCorrect?.BOOL || false,
-      })),
-    }));
-
-    items.sort((a: any, b: any) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
+    const items = (result.Items || []).sort((a: any, b: any) => {
+      return new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime();
+    });
 
     return NextResponse.json(items);
   } catch (error: any) {
