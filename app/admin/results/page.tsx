@@ -10,6 +10,12 @@ interface Answer {
   isCorrect: boolean;
 }
 
+interface Question {
+  id: string;
+  text: string;
+  options: { text: string; isCorrect: boolean }[];
+}
+
 interface QuizResult {
   id: string;
   name: string;
@@ -22,32 +28,38 @@ interface QuizResult {
 
 export default function AdminResultsPage() {
   const [results, setResults] = useState<QuizResult[]>([]);
+  const [questions, setQuestions] = useState<Question[]>([]);
   const [expandedId, setExpandedId] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    fetchResults();
+    Promise.all([
+      fetch("/api/admin/results-data").then(r => r.json()),
+      fetch("/api/questions").then(r => r.json()),
+    ]).then(([resultsData, questionsData]) => {
+      setResults(resultsData);
+      setQuestions(questionsData);
+    }).catch(console.error).finally(() => setLoading(false));
   }, []);
-
-  const fetchResults = async () => {
-    try {
-      const res = await fetch("/api/admin/results-data");
-      if (res.ok) {
-        const data = await res.json();
-        setResults(data);
-      }
-    } catch (e) {
-      console.error("Failed to fetch results", e);
-    } finally {
-      setLoading(false);
-    }
-  };
 
   const getPercentageColor = (pct: number) => {
     if (pct <= 40) return "text-red-600";
     if (pct <= 70) return "text-yellow-600";
     if (pct <= 90) return "text-green-600";
     return "text-purple-600";
+  };
+
+  const getQuestionText = (questionId: string) => {
+    const q = questions.find(q => q.id === questionId);
+    return q ? q.text : "Вопрос не найден";
+  };
+
+  const getOptionText = (questionId: string, optionIndex: number) => {
+    const q = questions.find(q => q.id === questionId);
+    if (q && q.options[optionIndex]) {
+      return q.options[optionIndex].text;
+    }
+    return "Вариант не найден";
   };
 
   if (loading) {
@@ -104,14 +116,19 @@ export default function AdminResultsPage() {
 
                 {expandedId === result.id && (
                   <div className="mt-4 pt-4 border-t space-y-3">
-                    <h4 className="font-medium text-sm text-gray-700">Ответы:</h4>
-                    {result.answers.map((answer, idx) => (
-                      <div key={idx} className={`p-3 rounded-lg text-sm ${answer.isCorrect ? "bg-green-50 border border-green-200" : "bg-red-50 border border-red-200"}`}>
-                        <span className={answer.isCorrect ? "text-green-700" : "text-red-700"}>
-                          {answer.isCorrect ? "✓" : "✗"} Вопрос {idx + 1}
-                        </span>
-                      </div>
-                    ))}
+                    <h4 className="font-medium text-sm text-gray-700 mb-2">Ответы на вопросы:</h4>
+                    {result.answers.map((answer, idx) => {
+                      const questionText = getQuestionText(answer.questionId);
+                      const selectedText = getOptionText(answer.questionId, answer.selectedIndex);
+                      return (
+                        <div key={idx} className={`p-3 rounded-lg text-sm ${answer.isCorrect ? "bg-green-50 border border-green-200" : "bg-red-50 border border-red-200"}`}>
+                          <p className="font-medium mb-1">{idx + 1}. {questionText}</p>
+                          <p className={answer.isCorrect ? "text-green-700" : "text-red-700"}>
+                            {answer.isCorrect ? "✓" : "✗"} Ответ: {selectedText}
+                          </p>
+                        </div>
+                      );
+                    })}
                   </div>
                 )}
               </div>
