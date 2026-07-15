@@ -54,6 +54,8 @@ export default function ResultScreen({ percentage, name, answers }: ResultScreen
     const id = toast.loading("Сохраняем результат...");
 
     try {
+      console.log("Sending result:", { name, percentage, wish, story, answers });
+      
       const res = await fetch("/api/quiz-results", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -66,14 +68,17 @@ export default function ResultScreen({ percentage, name, answers }: ResultScreen
         }),
       });
 
+      const text = await res.text();
+      console.log("Response:", text);
+
       if (res.ok) {
         toast.success("Результат отправлен! 🎉", { id });
         setSaved(true);
       } else {
-        const err = await res.text();
-        toast.error(`Ошибка: ${err}`, { id });
+        toast.error(`Ошибка: ${text}`, { id });
       }
     } catch (e) {
+      console.error("Error:", e);
       toast.success("Результат сохранён локально! 🎉", { id });
       setSaved(true);
     }
