@@ -1,31 +1,9 @@
 import { NextResponse } from "next/server";
-import { DynamoDBClient } from "@aws-sdk/client-dynamodb";
-import { DynamoDBDocumentClient, ScanCommand } from "@aws-sdk/lib-dynamodb";
+import { getQuizResults } from "@/lib/models";
 
 export async function GET() {
   try {
-    const endpoint = process.env.DOCUMENT_API_ENDPOINT;
-    const region = process.env.DOCUMENT_API_REGION || "ru-central1";
-    const accessKeyId = process.env.AWS_ACCESS_KEY_ID;
-    const secretAccessKey = process.env.AWS_SECRET_ACCESS_KEY;
-
-    const client = new DynamoDBClient({
-      region,
-      endpoint: endpoint || undefined,
-      credentials:
-        accessKeyId && secretAccessKey
-          ? { accessKeyId, secretAccessKey }
-          : undefined,
-    });
-
-    const docClient = DynamoDBDocumentClient.from(client);
-    const command = new ScanCommand({ TableName: "quiz_results" });
-    const result = await docClient.send(command);
-
-    const items = (result.Items || []).sort((a: any, b: any) => {
-      return new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime();
-    });
-
+    const items = await getQuizResults();
     return NextResponse.json(items);
   } catch (error: any) {
     return NextResponse.json({ error: error.message }, { status: 500 });
