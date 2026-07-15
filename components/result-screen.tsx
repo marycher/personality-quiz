@@ -54,22 +54,21 @@ export default function ResultScreen({ percentage, name, answers }: ResultScreen
     const id = toast.loading("Сохраняем результат...");
 
     try {
-      console.log("Sending result:", { name, percentage, wish, story, answers });
-      
+      const body = JSON.stringify({
+        name: name || "Аноним",
+        percentage,
+        wish: wish || "",
+        story: story || "",
+        answers,
+      });
+
       const res = await fetch("/api/quiz-results", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          name,
-          percentage,
-          wish,
-          story,
-          answers,
-        }),
+        body,
       });
 
       const text = await res.text();
-      console.log("Response:", text);
 
       if (res.ok) {
         toast.success("Результат отправлен! 🎉", { id });
@@ -78,7 +77,6 @@ export default function ResultScreen({ percentage, name, answers }: ResultScreen
         toast.error(`Ошибка: ${text}`, { id });
       }
     } catch (e) {
-      console.error("Error:", e);
       toast.success("Результат сохранён локально! 🎉", { id });
       setSaved(true);
     }
@@ -103,7 +101,7 @@ export default function ResultScreen({ percentage, name, answers }: ResultScreen
 
   return (
     <div className="bg-white rounded-2xl shadow-xl p-6 md:p-8 text-center">
-      <div className="animate-in fade-in slide-in-from-bottom-4 duration-500">
+      <div>
         <div className="flex justify-center gap-2 mb-4">
           <Sparkles className="w-8 h-8 text-yellow-400" />
           <Star className="w-8 h-8 text-yellow-400" />
@@ -116,18 +114,8 @@ export default function ResultScreen({ percentage, name, answers }: ResultScreen
 
         <div className="relative inline-flex items-center justify-center w-32 h-32 mb-4">
           <svg className="w-32 h-32 transform -rotate-90" viewBox="0 0 36 36">
-            <circle
-              cx="18" cy="18" r="15.5"
-              fill="none" stroke="#e5e7eb" strokeWidth="3"
-            />
-            <circle
-              cx="18" cy="18" r="15.5"
-              fill="none"
-              stroke="url(#gradient)"
-              strokeWidth="3"
-              strokeDasharray={`${percentage} ${100 - percentage}`}
-              strokeLinecap="round"
-            />
+            <circle cx="18" cy="18" r="15.5" fill="none" stroke="#e5e7eb" strokeWidth="3" />
+            <circle cx="18" cy="18" r="15.5" fill="none" stroke="url(#gradient)" strokeWidth="3" strokeDasharray={`${percentage} ${100 - percentage}`} strokeLinecap="round" />
             <defs>
               <linearGradient id="gradient" x1="0%" y1="0%" x2="100%" y2="0%">
                 <stop offset="0%" stopColor="#667eea" />
@@ -135,105 +123,52 @@ export default function ResultScreen({ percentage, name, answers }: ResultScreen
               </linearGradient>
             </defs>
           </svg>
-          <span className="absolute text-3xl font-bold text-purple-700">
-            {percentage}%
-          </span>
+          <span className="absolute text-3xl font-bold text-purple-700">{percentage}%</span>
         </div>
 
-        <p className="text-lg text-gray-700 mb-6 leading-relaxed">
-          {getResultMessage(percentage)}
-        </p>
-
+        <p className="text-lg text-gray-700 mb-6 leading-relaxed">{getResultMessage(percentage)}</p>
         <div className="text-6xl mb-6">{getResultEmoji(percentage)}</div>
 
-        {/* Wish Section */}
         <div className="text-left mb-4">
           <Label htmlFor="wish" className="text-sm text-gray-600 mb-2 block">
             На праздновании не всегда получается сказать все то, что хочется. Иногда неловко, иногда некогда. Но здесь ты можешь сказать Алине все-все, а потом при возможности еще и сказать лично!
           </Label>
-          <Textarea
-            id="wish"
-            placeholder="Напишите ваше пожелание..."
-            value={wish}
-            onChange={(e) => setWish(e.target.value)}
-            className="mt-1"
-            rows={3}
-          />
+          <Textarea id="wish" placeholder="Напишите ваше пожелание..." value={wish} onChange={(e) => setWish(e.target.value)} className="mt-1" rows={3} />
         </div>
 
-        {/* Story Section */}
         <div className="text-left mb-6">
           <Label htmlFor="story" className="text-sm text-gray-600 mb-2 block">
             Все мы любим воспоминания. Ты очень порадуешь Алину, если расскажешь любимую историю, связанную с ней. Это может быть день знакомства или просто какой-то день вместе
           </Label>
-          <Textarea
-            id="story"
-            placeholder="Напишите вашу историю..."
-            value={story}
-            onChange={(e) => setStory(e.target.value)}
-            className="mt-1"
-            rows={3}
-          />
+          <Textarea id="story" placeholder="Напишите вашу историю..." value={story} onChange={(e) => setStory(e.target.value)} className="mt-1" rows={3} />
         </div>
 
-        {/* Save Button */}
         {!saved && (
-          <Button
-            onClick={handleSave}
-            className="w-full mb-4 bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 text-lg py-6"
-          >
+          <Button onClick={handleSave} className="w-full mb-4 bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 text-lg py-6">
             Отправить
           </Button>
         )}
 
-        {saved && (
-          <p className="text-green-600 font-semibold mb-4">Результат отправлен! 🎉</p>
-        )}
+        {saved && <p className="text-green-600 font-semibold mb-4">Результат отправлен! 🎉</p>}
 
-        {/* Share Button */}
         <div className="relative mb-4">
-          <Button
-            onClick={handleShare}
-            variant="outline"
-            className="w-full"
-          >
-            <Share2 className="w-4 h-4 mr-2" />
-            Поделиться
+          <Button onClick={handleShare} variant="outline" className="w-full">
+            <Share2 className="w-4 h-4 mr-2" /> Поделиться
           </Button>
-
           {shareOpen && (
-            <div className="absolute bottom-full mb-2 left-0 right-0 bg-white border rounded-xl shadow-lg p-4 space-y-2 animate-in fade-in slide-in-from-bottom-2 duration-200">
-              <Button
-                onClick={handleCopyLink}
-                variant="ghost"
-                className="w-full justify-start"
-              >
+            <div className="absolute bottom-full mb-2 left-0 right-0 bg-white border rounded-xl shadow-lg p-4 space-y-2">
+              <Button onClick={handleCopyLink} variant="ghost" className="w-full justify-start">
                 {copied ? <Check className="w-4 h-4 mr-2 text-green-500" /> : <Copy className="w-4 h-4 mr-2" />}
                 {copied ? "Скопировано!" : "Копировать ссылку"}
               </Button>
               {shareLinks.map((link) => (
-                <a
-                  key={link.name}
-                  href={link.url}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="block w-full text-left px-4 py-2 hover:bg-gray-100 rounded-lg transition-colors"
-                >
-                  {link.name}
-                </a>
+                <a key={link.name} href={link.url} target="_blank" rel="noopener noreferrer" className="block w-full text-left px-4 py-2 hover:bg-gray-100 rounded-lg transition-colors">{link.name}</a>
               ))}
             </div>
           )}
         </div>
 
-        {/* Restart Button */}
-        <Button
-          onClick={() => window.location.href = "/"}
-          variant="outline"
-          className="w-full"
-        >
-          Пройти заново
-        </Button>
+        <Button onClick={() => window.location.href = "/"} variant="outline" className="w-full">Пройти заново</Button>
       </div>
     </div>
   );
