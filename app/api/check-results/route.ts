@@ -20,10 +20,25 @@ export async function GET() {
     const command = new ScanCommand({ TableName: "quiz_results" });
     const result = await client.send(command);
 
-    return NextResponse.json({
-      count: result.Items?.length || 0,
-      items: result.Items,
-    });
+    const items = (result.Items || []).map((item: any) => ({
+      id: item.id?.S || "",
+      name: item.name?.S || "Аноним",
+      percentage: Number(item.percentage?.N || 0),
+      wish: item.wish?.S || "",
+      story: item.story?.S || "",
+      createdAt: item.createdAt?.S || "",
+      answers: (item.answers?.L || []).map((a: any) => ({
+        questionId: a.M?.questionId?.S || "",
+        selectedIndex: Number(a.M?.selectedIndex?.N || 0),
+        isCorrect: a.M?.isCorrect?.BOOL || false,
+      })),
+    }));
+
+    items.sort((a: any, b: any) => 
+      new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
+    );
+
+    return NextResponse.json({ count: items.length, items });
   } catch (error: any) {
     return NextResponse.json({ error: error.message }, { status: 500 });
   }
