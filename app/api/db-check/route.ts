@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import { DynamoDBClient, ListTablesCommand } from "@aws-sdk/client-dynamodb";
+import { DynamoDBClient, ScanCommand } from "@aws-sdk/client-dynamodb";
 
 export async function GET() {
   try {
@@ -8,12 +8,21 @@ export async function GET() {
     const accessKeyId = process.env.AWS_ACCESS_KEY_ID;
     const secretAccessKey = process.env.AWS_SECRET_ACCESS_KEY;
 
-    return NextResponse.json({
-      hasEndpoint: !!endpoint,
-      hasAccessKey: !!accessKeyId,
-      hasSecretKey: !!secretAccessKey,
+    const client = new DynamoDBClient({
       region,
-      endpoint: endpoint ? endpoint.substring(0, 50) + "..." : null,
+      endpoint: endpoint || undefined,
+      credentials:
+        accessKeyId && secretAccessKey
+          ? { accessKeyId, secretAccessKey }
+          : undefined,
+    });
+
+    const command = new ScanCommand({ TableName: "quiz_results" });
+    const result = await client.send(command);
+
+    return NextResponse.json({
+      count: result.Items?.length || 0,
+      lastEvaluatedKey: result.LastEvaluatedKey ? "есть" : "нет",
     });
   } catch (error: any) {
     return NextResponse.json({ error: error.message }, { status: 500 });

@@ -22,7 +22,7 @@ export async function GET() {
 
     return NextResponse.json({
       count: result.Items?.length || 0,
-      lastEvaluatedKey: result.LastEvaluatedKey ? "есть" : "нет",
+      items: result.Items,
     });
   } catch (error: any) {
     return NextResponse.json({ error: error.message }, { status: 500 });
